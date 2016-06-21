@@ -16,13 +16,13 @@
 
 contract Ricardian {
   event TermsChanged(
-        address indexed changer,
-        bytes32 contractHash
-    );
+      address indexed changer,
+      bytes32 indexed contractHash
+  );
   event TermsAccepted(
-        address indexed accepter,
-        bytes32 contractHash
-    );
+      address indexed accepter,
+      bytes32 indexed contractHash
+  );
 
   bytes32 public contractHash;
   uint public lastChange;
