@@ -8,8 +8,9 @@ import "Ricardian.sol";
 
 contract RicardoCoin is Ricardian {
 	mapping (address => uint) balances;
-
+	address issuer;
 	function RicardoCoin() {
+		issuer = tx.origin;
 		balances[tx.origin] = 10000;
 		// Contract at ipfs QmR4NbJgHZ4JA1Uexi6t6JpZENm7PdY9oqeQM2YVCsyB3c
 		changeContract(0x28678b42f7fcf403009f1805e4e1233163b231b24d2b22105f3ea3686403193f);
@@ -20,6 +21,11 @@ contract RicardoCoin is Ricardian {
 		balances[msg.sender] -= amount;
 		balances[receiver] += amount;
 		return true;
+	}
+
+	function faucet() hasAccepted {
+		balances[issuer] -= 100;
+		balances[msg.sender] += 100;
 	}
 
 	function getBalanceInEth(address addr) returns(uint){

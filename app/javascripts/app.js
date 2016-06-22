@@ -1,6 +1,11 @@
+var Buffer = Tools.Buffer.Buffer;
+var bs58 = Tools.bs58;
+var ipfs = Tools.ipfs;
+
 var accounts;
 var account;
 var balance;
+var contractHash;
 
 function setStatus(message) {
   var status = document.getElementById("status");
@@ -8,9 +13,9 @@ function setStatus(message) {
 };
 
 function refreshBalance() {
-  var meta = RicardoCoin.deployed();
+  var ricardo = RicardoCoin.deployed();
 
-  meta.getBalance.call(account, {from: account}).then(function(value) {
+  ricardo.getBalance.call(account, {from: account}).then(function(value) {
     var balance_element = document.getElementById("balance");
     balance_element.innerHTML = value.valueOf();
   }).catch(function(e) {
@@ -20,14 +25,14 @@ function refreshBalance() {
 };
 
 function sendCoin() {
-  var meta = RicardoCoin.deployed();
+  var ricardo = RicardoCoin.deployed();
 
   var amount = parseInt(document.getElementById("amount").value);
   var receiver = document.getElementById("receiver").value;
 
   setStatus("Initiating transaction... (please wait)");
 
-  meta.sendCoin(receiver, amount, {from: account}).then(function() {
+  ricardo.sendCoin(receiver, amount, {from: account}).then(function() {
     setStatus("Transaction complete!");
     refreshBalance();
   }).catch(function(e) {
@@ -36,7 +41,56 @@ function sendCoin() {
   });
 };
 
+function checkAcceptance() {
+  var ricardo = RicardoCoin.deployed();
+
+  ricardo.accepted.call(account).then(function(value) {
+    var accepted_element = document.getElementById("accepted");
+    if (value.valueOf() == 0) {
+      document.getElementById("sendform").style="display:none";
+      document.getElementById("accept-button").style="display:block";
+    } else {
+      document.getElementById("accept-button").style="display:none";
+      document.getElementById("sendform").style="display:block";
+      accepted_element.innerText = "Accepted on : "+new Date(1000*value.valueOf());
+    }
+  }).catch(function(e) {
+    console.log(e);
+    setStatus("Error getting acceptance; see log.");
+  });
+};
+
+function accept(e) {
+  var ricardo = RicardoCoin.deployed();
+  document.getElementById("accept-button").style="display:none";
+  ricardo.accept(contractHash, {from: account}).then(function(value) {
+    checkAcceptance();
+    return ricardo.faucet({from:account})
+  }).then(function(value) {
+      setStatus("Called faucet");
+      refreshBalance();
+  }).catch(function(e) {
+    console.log(e);
+    setStatus("Error performing acceptance; see log.");
+  });
+  return false;
+};
+
 window.onload = function() {
+  var ricardo = RicardoCoin.deployed();
+  ipfs.setProvider(ipfs.localProvider);
+  ricardo.contractHash.call().then(function(hash) {
+    console.log("contract hash: " + hash);
+    console.log(hash);
+    contractHash = hash;
+    var ipfshash = bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'));
+    document.getElementById('ipfshash').innerText = ipfshash;
+    document.getElementById('plaintext').value = "loading ipfs hash " + ipfshash;
+    ipfs.catText(ipfshash, function(e,r) {
+      document.getElementById('plaintext').value = r;
+    });    
+  });
+
   web3.eth.getAccounts(function(err, accs) {
     if (err != null) {
       alert("There was an error fetching your accounts.");
@@ -49,8 +103,19 @@ window.onload = function() {
     }
 
     accounts = accs;
+    var options = ""
+    for(i in accounts) {
+      options += "<option value="+i+">"+accounts[i]+"</option>\n"
+    }
+    var accountselector = document.getElementById("accounts");
+    accountselector.innerHTML = options
+    accountselector.onchange = function(e) {
+      account = accounts[e.currentTarget.selectedIndex];
+      checkAcceptance();
+      refreshBalance();
+    }
     account = accounts[0];
-
+    checkAcceptance();
     refreshBalance();
   });
 }
