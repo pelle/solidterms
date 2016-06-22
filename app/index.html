@@ -8,24 +8,23 @@
 </head>
 <body>
   <h1>RicardoCoin</h1>
-  <h2>Example Truffle Dapp</h2>
   <form>
     <fieldset>
       <legend>Account:</legend>
       <select id="accounts"></select>
-      <h3>You have <span class="black"><span id="balance"></span> Ricardos</span></h3>
+      <h5>You have <span class="black"><span id="balance"></span> Ricardos</span></h5>
     </fieldset>
   </form>
-  
+
   <form id="sendform" style="display:none">
     <fieldset>
-    <legend>Send</legend>  
+    <legend>Send</legend>
     <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input>
     <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
     <br><br><button id="send" onclick="sendCoin();return false;">Send RicardoCoin</button>
     <br><br>
     </fieldset>
-  <form>
+  </form>
 
   <form>
     <fieldset>
@@ -40,7 +39,6 @@
     <p id="accepted"></p>
     </fieldset>
   </form>
-
   <span id="status"></span>
 </body>
 </html>

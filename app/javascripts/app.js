@@ -43,12 +43,14 @@ function sendCoin() {
 
 function checkAcceptance() {
   var ricardo = RicardoCoin.deployed();
-
+  console.log("checkAcceptance of "+ account);
   ricardo.accepted.call(account).then(function(value) {
+    console.log("received value "+ value);
     var accepted_element = document.getElementById("accepted");
     if (value.valueOf() == 0) {
       document.getElementById("sendform").style="display:none";
       document.getElementById("accept-button").style="display:block";
+      accepted_element.innerText="";
     } else {
       document.getElementById("accept-button").style="display:none";
       document.getElementById("sendform").style="display:block";
@@ -80,8 +82,6 @@ window.onload = function() {
   var ricardo = RicardoCoin.deployed();
   ipfs.setProvider(ipfs.localProvider);
   ricardo.contractHash.call().then(function(hash) {
-    console.log("contract hash: " + hash);
-    console.log(hash);
     contractHash = hash;
     var ipfshash = bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'));
     document.getElementById('ipfshash').innerText = ipfshash;
