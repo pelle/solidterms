@@ -17,3 +17,26 @@ The offerer can change the agreement using the same `changeContract` function
 
 To force parties to accept the new agreement, a modifier `hasAcceptedLatest` can be used on functions
 
+## Running example:
+
+You need a local ipfs node running at the moment or change code in app.js to point at a public one.
+
+Install truffle and testrpc
+
+```
+npm install -g truffle
+npm install -g ethereumjs-testrpc
+```
+
+In a terminal start testrpc:
+
+`testrpc`
+
+In another terminal install the contract and run the server:
+
+```
+truffle deploy
+truffle serve
+```
+
+[Try it out](http://localhost:8080)
