@@ -3,3 +3,4 @@ node_modules
 *.abi
 *.log
 environments/development
+environments/test

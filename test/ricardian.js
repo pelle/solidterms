@@ -15,7 +15,7 @@ contract('RicardoCoin', function(accounts) {
 
   it("should accept correct hash", function(done) {
     var ricardo = RicardoCoin.deployed();
-    ricardo.contractHash.call().then(function (hash){
+    ricardo.terms.call().then(function (hash){
       assert.equal(hash,'0x28678b42f7fcf403009f1805e4e1233163b231b24d2b22105f3ea3686403193f');
       return ricardo.accept(hash,{from: accounts[5]});
     }).then(function() {
@@ -118,9 +118,9 @@ contract('RicardoCoin', function(accounts) {
       return ricardo.getBalance.call(receiver);
     }).then(function(balance) {
       receiver_balance = balance.toNumber();
-      return ricardo.contractHash.call();
-    }).then(function(contractHash) {
-      return ricardo.accept(contractHash, {from: holder})
+      return ricardo.terms.call();
+    }).then(function(terms) {
+      return ricardo.accept(terms, {from: holder})
     }).then(function() {
       return ricardo.sendCoin(receiver, amount, {from: holder});
     }).then(function() {

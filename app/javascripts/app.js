@@ -5,7 +5,7 @@ var ipfs = Tools.ipfs;
 var accounts;
 var account;
 var balance;
-var contractHash;
+var terms;
 
 function setStatus(message) {
   var status = document.getElementById("status");
@@ -65,7 +65,7 @@ function checkAcceptance() {
 function accept(e) {
   var ricardo = RicardoCoin.deployed();
   document.getElementById("accept-button").style="display:none";
-  ricardo.accept(contractHash, {from: account}).then(function(value) {
+  ricardo.accept(terms, {from: account}).then(function(value) {
     checkAcceptance();
     return ricardo.faucet({from:account})
   }).then(function(value) {
@@ -81,8 +81,8 @@ function accept(e) {
 window.onload = function() {
   var ricardo = RicardoCoin.deployed();
   ipfs.setProvider(ipfs.localProvider);
-  ricardo.contractHash.call().then(function(hash) {
-    contractHash = hash;
+  ricardo.terms.call().then(function(hash) {
+    terms = hash;
     var ipfshash = bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'));
     document.getElementById('ipfshash').innerText = ipfshash;
     document.getElementById('plaintext').value = "loading ipfs hash " + ipfshash;

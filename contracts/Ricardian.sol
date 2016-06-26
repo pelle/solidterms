@@ -24,7 +24,7 @@ contract Ricardian {
       bytes32 indexed contractHash
   );
 
-  bytes32 public contractHash;
+  bytes32 public terms;
   uint public lastChange;
   address public offerer;
   mapping(address => uint) public accepted;
@@ -33,24 +33,24 @@ contract Ricardian {
     offerer = msg.sender;
   }
 
-  function isActive() public returns(bool) { return (lastChange > 0 && contractHash.length > 0) ;}
+  function isActive() public returns(bool) { return (lastChange > 0 && terms.length > 0) ;}
 
   modifier ifActive() { if (isActive()) _ } 
   modifier hasAccepted() { if (accepted[msg.sender] > 0) _ } 
   modifier hasAcceptedLatest() { if (accepted[msg.sender] >= lastChange) _ }
 
-  function accept(bytes32 _contractHash) ifActive {
-    if (_contractHash != contractHash) throw;
+  function accept(bytes32 _terms) ifActive {
+    if (_terms != terms) throw;
     accepted[msg.sender] = block.timestamp;    
-    TermsAccepted(msg.sender, contractHash);
+    TermsAccepted(msg.sender, terms);
   }
 
-  function changeContract(bytes32 _contractHash) {
+  function changeContract(bytes32 _terms) {
     if (msg.sender != offerer) throw;
-    contractHash = _contractHash;
+    terms = _terms;
     lastChange = block.timestamp;
-    accept(_contractHash);
-    TermsChanged(offerer, contractHash);
+    TermsChanged(offerer, terms);
+    accept(_terms);
   }
   
 }
