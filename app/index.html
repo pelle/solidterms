@@ -2,9 +2,9 @@
 <html>
 <head>
   <title>RicardoCoin - Default Truffle App</title>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href="./app.css" rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
 </head>
 <body>
   <h1>RicardoCoin</h1>
@@ -32,7 +32,11 @@
     <textarea id="plaintext" cols="40" rows="6">
       loading...
     </textarea>
+    <div id="change-button" style="display:none">
+      <button onclick="proposeChange();return false;">Propose Change</button>
+    </div>
     <p id="ipfshash"></p>
+    <p id="last-changed"></p>
     <div id="accept-button" style="display:none">
       <button onclick="accept();return false;">Accept Terms</button>
     </div>

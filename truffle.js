@@ -11,8 +11,7 @@ module.exports = {
     "images/": "images/"
   },
   deploy: [
-    "RicardoCoin",
-    "ConvertLib"
+    "RicardoCoin"
   ],
   rpc: {
     host: "localhost",

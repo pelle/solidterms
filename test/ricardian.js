@@ -6,14 +6,32 @@ contract('RicardoCoin', function(accounts) {
     }).then(done).catch(done);
   });
 
-  it("should not be accepted", function(done) {
+  it("should have lastChanged", function(done) {
+    var ricardo = RicardoCoin.deployed();
+    ricardo.lastChange.call().then(function(changedAt) {
+      assert.notEqual(changedAt.toNumber(), 0, "it have a lastChange date");
+    }).then(done).catch(done);
+  });
+
+  it("should be accepted by issuer", function(done) {
+    var ricardo = RicardoCoin.deployed();
+    var lastChange;
+    ricardo.lastChange.call().then(function(changedAt) {
+      lastChange = changedAt.toNumber();
+      return ricardo.accepted.call(accounts[0])
+    }).then(function(timestamp) {
+      assert.equal(timestamp.toNumber(), lastChange, "it should be accepted");
+    }).then(done).catch(done);
+  });
+
+  it("should not be accepted non issuer", function(done) {
     var ricardo = RicardoCoin.deployed();
     ricardo.accepted.call(accounts[1]).then(function(timestamp) {
       assert.equal(timestamp.toNumber(), 0, "it should not be accepted");
     }).then(done).catch(done);
   });
 
-  it("should accept correct hash", function(done) {
+  it("non issuer should accept correct hash", function(done) {
     var ricardo = RicardoCoin.deployed();
     ricardo.terms.call().then(function (hash){
       assert.equal(hash,'0x28678b42f7fcf403009f1805e4e1233163b231b24d2b22105f3ea3686403193f');
@@ -35,6 +53,34 @@ contract('RicardoCoin', function(accounts) {
       assert.equal(timestamp.toNumber(), 0, "it should not be accepted");
     }).then(done).catch(done);
   });
+
+  it("should proposeChange hash", function(done) {
+    var ricardo = RicardoCoin.deployed();
+    var issuer = accounts[0];
+    var originalTerms;
+    var originalChange;
+    var lastChange;
+    var newTerms = '0xac6c8581751c30fbdd134173b4a40b55f2cc3c3e903c0690dc02810a12789f8c';
+    ricardo.terms.call().then(function (hash){
+      originalTerms = hash;
+      return ricardo.lastChange.call();
+    }).then(function(changed) {
+      originalChange = changed.toNumber();
+      return ricardo.proposeChange(newTerms, {from:accounts[0]})
+    }).then(function() {
+      return ricardo.terms.call()
+    }).then(function (hash){
+      assert.equal(hash, newTerms, "new terms were not set");
+      return ricardo.lastChange.call();
+    }).then(function(changed) {
+      lastChange = changed.toNumber();
+      assert.notEqual(lastChange, originalChange, "lastChanged was not updated");
+      return ricardo.accepted.call(issuer);
+    }).then(function(accepted) {
+      assert.equal(accepted.toNumber(),lastChange, "issuer accepts agreement when changing");
+    }).then(done).catch(done);
+  });
+  
 
   it("should send coin correctly for issuer", function(done) {
     var ricardo = RicardoCoin.deployed();
@@ -110,8 +156,10 @@ contract('RicardoCoin', function(accounts) {
     var holder_balance;
     var receiver_balance;
     var amount = 10;
-
-    ricardo.sendCoin(holder, amount, {from: issuer}).then(function() {
+    var lastChange;
+    var originalTerms;
+    var newTerms = "0xac6c8581751c30fbdd134173b4a40b55f2cc3c3e903c0690dc02810a12789f8c";
+    ricardo.sendCoin(holder, 100, {from: issuer}).then(function() {
       return ricardo.getBalance.call(holder);
     }).then(function(balance) {
       holder_balance = balance.toNumber();
@@ -120,18 +168,33 @@ contract('RicardoCoin', function(accounts) {
       receiver_balance = balance.toNumber();
       return ricardo.terms.call();
     }).then(function(terms) {
-      return ricardo.accept(terms, {from: holder})
+      originalTerms = terms;
+      return ricardo.lastChange.call();
+    }).then(function(changed) {
+      lastChange = changed.toNumber();
+      assert.notEqual(lastChange,0, "last change should be set to the creation timestamp");
+      return ricardo.accepted.call(issuer);
+    }).then(function(accepted) {
+      assert.equal(accepted.toNumber(),lastChange, "issuer accepts agreement when changing");
+      return ricardo.accepted.call(holder);
+    }).then(function(accepted) {
+      assert.equal(accepted.toNumber(),0, "holder has not yet accepted agreement");
+    }).then(function(){
+      return ricardo.accept(originalTerms, {from: holder})
     }).then(function() {
+      return ricardo.accepted.call(holder);
+    }).then(function(accepted) {
+      assert.notEqual(accepted.toNumber(),0, "holder has now accepted agreement");
       return ricardo.sendCoin(receiver, amount, {from: holder});
     }).then(function() {
       return ricardo.getBalance.call(holder);
     }).then(function(balance) {
       assert.equal(balance.toNumber(), holder_balance - amount, "Amount was not transfered by holder even though holder having accepted terms");
+      holder_balance = balance.toNumber();
       return ricardo.getBalance.call(receiver);
     }).then(function(balance) {
       assert.equal(balance.toNumber(), receiver_balance + amount, "Amount was not transfered to receiver even though holder having accepted terms");
     }).then(done).catch(done);
   });
-
 
 });

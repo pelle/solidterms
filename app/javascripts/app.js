@@ -6,6 +6,7 @@ var accounts;
 var account;
 var balance;
 var terms;
+var lastChange;
 
 function setStatus(message) {
   var status = document.getElementById("status");
@@ -47,14 +48,36 @@ function checkAcceptance() {
   ricardo.accepted.call(account).then(function(value) {
     console.log("received value "+ value);
     var accepted_element = document.getElementById("accepted");
-    if (value.valueOf() == 0) {
+    if (value.valueOf() < lastChange) {
       document.getElementById("sendform").style="display:none";
       document.getElementById("accept-button").style="display:block";
       accepted_element.innerText="";
+      if (value.valueOf() != 0 ) {
+        setStatus("Terms of Service have changed, please accept the new terms")
+      }
     } else {
       document.getElementById("accept-button").style="display:none";
       document.getElementById("sendform").style="display:block";
       accepted_element.innerText = "Accepted on : "+new Date(1000*value.valueOf());
+    }
+  }).catch(function(e) {
+    console.log(e);
+    setStatus("Error getting acceptance; see log.");
+  });
+};
+
+function isChangeable() {
+  var ricardo = RicardoCoin.deployed();
+  console.log("isChangeable for "+ account);
+  ricardo.canProposeChange.call(account, {from: account}).then(function(value) {
+    console.log("received value "+ value);
+    var plaintext = document.getElementById("plaintext");
+    if (value.valueOf() == true) {
+      plaintext.disabled = false;
+      document.getElementById('change-button').style="display:block";
+    } else {
+      document.getElementById('change-button').style="display:none";
+      plaintext.disabled = true;
     }
   }).catch(function(e) {
     console.log(e);
@@ -78,10 +101,34 @@ function accept(e) {
   return false;
 };
 
-window.onload = function() {
+function proposeChange(e) {
   var ricardo = RicardoCoin.deployed();
-  ipfs.setProvider(ipfs.localProvider);
-  ricardo.terms.call().then(function(hash) {
+  document.getElementById("change-button").style="display:none";
+  ipfs.add(document.getElementById('plaintext').value, function(e,hash) {
+    if (e) { 
+      console.log(e);
+      setStatus("error uploading to ipfs");
+    } else {
+      console.log("uploaded new terms to ipfs: " + hash);
+      var hexHash = "0x" + new Buffer(bs58.decode(hash).slice(2)).toString('hex');
+      console.log('hex hash: '+ hexHash);
+      ricardo.proposeChange(hexHash, {from: account}).then(function(tx) {
+          setStatus("Changed terms");
+          document.getElementById("change-button").style="display:block";
+          loadTerms().then(checkAcceptance);
+      }).catch(function(e) {
+        console.log(e);
+        document.getElementById("change-button").style="display:block";
+        setStatus("Error performing change; see log.");
+      });
+    }
+  });
+  return false;
+};
+
+function loadTerms() {
+  var ricardo = RicardoCoin.deployed();
+  return ricardo.terms.call().then(function(hash) {
     terms = hash;
     var ipfshash = bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'));
     document.getElementById('ipfshash').innerText = ipfshash;
@@ -89,8 +136,17 @@ window.onload = function() {
     ipfs.catText(ipfshash, function(e,r) {
       document.getElementById('plaintext').value = r;
     });    
+  }).then(function(){ 
+    return ricardo.lastChange.call().then(function(timestamp) {
+      console.log("last changed at: "+timestamp);
+      lastChange = timestamp.valueOf();
+      document.getElementById('last-changed').innerText = "Last Changed on : "+new Date(1000*lastChange);
+    });
   });
-
+}
+window.onload = function() {
+  ipfs.setProvider(ipfs.localProvider);
+  loadTerms();
   web3.eth.getAccounts(function(err, accs) {
     if (err != null) {
       alert("There was an error fetching your accounts.");
@@ -113,9 +169,11 @@ window.onload = function() {
       account = accounts[e.currentTarget.selectedIndex];
       checkAcceptance();
       refreshBalance();
+      isChangeable();
     }
     account = accounts[0];
     checkAcceptance();
     refreshBalance();
+    isChangeable();
   });
 }
