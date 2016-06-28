@@ -19,11 +19,13 @@ import "Changeable.sol";
 // To force parties to accept the new agreement, a modifier `hasAcceptedLatest` can be used on functions
 
 contract TermsOfService is Acceptable, Changeable {
-  function TermsOfService(bytes32 _terms) {
+  function TermsOfService(bytes32 _terms, address offerer) {
+    setOfferer(offerer);
     proposeChange(_terms);
   }
   function proposeChange(bytes32 _terms) {
     super.proposeChange(_terms);
     accept(_terms);
   }
+  function isActive() constant returns(bool) { return terms.length > 0;}
 }

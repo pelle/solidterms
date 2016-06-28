@@ -5,13 +5,14 @@ import "TermsOfService.sol";
 // coin/token contracts. If you want to create a standards-compliant
 // token, see: https://github.com/ConsenSys/Tokens. Cheers!
 
-contract RicardoCoin is TermsOfService(0x28678b42f7fcf403009f1805e4e1233163b231b24d2b22105f3ea3686403193f) {
+contract RicardoCoin is TermsOfService {
 	mapping (address => uint) balances;
 	address issuer;
 	
-	function RicardoCoin() {
-		issuer = tx.origin;
-		balances[tx.origin] = 10000;
+	function RicardoCoin()  
+		TermsOfService(0x28678b42f7fcf403009f1805e4e1233163b231b24d2b22105f3ea3686403193f, msg.sender) {
+		issuer = msg.sender;
+		balances[msg.sender] = 10000;
 	}
 
 	function sendCoin(address receiver, uint amount) hasAcceptedLatest returns(bool sufficient) {

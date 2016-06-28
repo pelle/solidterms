@@ -1,4 +1,4 @@
-import "Ricardian.sol";
+import "HasTerms.sol";
 // A simple abstract way of handling acceptance for a Ricardian contract
 //
 // - Parties accept the contract by calling the `accept()` function providing the same ipfs hash
@@ -7,19 +7,15 @@ import "Ricardian.sol";
 // - An event `TermsAccepted` is emitted with the party's address and the current ipfs hash
 // To force parties to accept the new agreement, a modifier `hasAcceptedLatest` can be used on functions
 
-contract Acceptable is Ricardian {
-  event TermsAccepted(
-      address indexed accepter,
-      bytes32 indexed terms
-  );
+contract Acceptable is HasTerms {
   mapping(address => uint) public accepted;
 
   modifier hasAccepted() { if (accepted[msg.sender] > 0) _ } 
   modifier hasAcceptedLatest() { if (accepted[msg.sender] >= lastChange) _ }
 
   // Party accepts contract by presenting the hash that they are accepting 
-  function accept(bytes32 _terms) ifActive {
-    if (_terms != terms) throw;
+  function accept(bytes32 _terms) 
+    matchesTerms(_terms) {    
     accepted[msg.sender] = block.timestamp;    
     TermsAccepted(msg.sender, terms);
   }

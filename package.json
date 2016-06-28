@@ -1,5 +1,5 @@
 {
-  "name": "ricardian",
+  "name": "solidterms",
   "version": "1.0.0",
   "description": "Ricardian contracts for Solidity",
   "main": "toolkit.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pelle/ricardian.git"
+    "url": "git+https://github.com/pelle/solidterms.git"
   },
   "author": "Pelle Braendgaard",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pelle/ricardian/issues"
+    "url": "https://github.com/pelle/solidterms/issues"
   },
-  "homepage": "https://github.com/pelle/ricardian#readme",
+  "homepage": "https://github.com/pelle/solidterms#readme",
   "dependencies": {
     "browser-ipfs": "0.0.6",
     "bs58": "^3.0.0"

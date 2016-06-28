@@ -11,7 +11,8 @@ module.exports = {
     "images/": "images/"
   },
   deploy: [
-    "RicardoCoin"
+    "RicardoCoin",
+    "AgreementFactory"
   ],
   rpc: {
     host: "localhost",
