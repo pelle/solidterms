@@ -126,12 +126,17 @@ function proposeChange(e) {
   return false;
 };
 
+function hex2base58(hash) {
+  return bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'))
+}
 function loadTerms() {
   var ricardo = RicardoCoin.deployed();
   return ricardo.terms.call().then(function(hash) {
     terms = hash;
-    var ipfshash = bs58.encode(new Buffer("1220" + hash.slice(2), 'hex'));
-    document.getElementById('ipfshash').innerText = ipfshash;
+    var ipfshash = hex2base58(hash);
+    var ipfslink = document.getElementById('ipfshash')
+    ipfslink.innerText = ipfshash;
+    ipfslink.href = "https://ipfs.io/ipfs/" + ipfshash;
     document.getElementById('plaintext').value = "loading ipfs hash " + ipfshash;
     ipfs.catText(ipfshash, function(e,r) {
       document.getElementById('plaintext').value = r;
@@ -144,6 +149,20 @@ function loadTerms() {
     });
   });
 }
+
+function eventListener() {
+  var ricardo = RicardoCoin.deployed();
+  var eventlog = document.getElementById("eventlog");
+  ricardo.TermsChanged({}).watch(function(error, result) {
+    var ipfshash = hex2base58(result.args.terms);
+    eventlog.innerHTML += "<li>"+result.args.changer+" changed the terms to <a href='https://ipfs.io/ipfs/"+ipfshash+"'>"+ipfshash+"</a></li>";
+  });
+  ricardo.TermsAccepted({}).watch(function(error, result) {
+    var ipfshash = hex2base58(result.args.terms);
+    eventlog.innerHTML += "<li>"+result.args.accepter+" accepted the terms of <a href='https://ipfs.io/ipfs/"+ipfshash+"'>"+ipfshash+"</a></li>";
+  });
+};
+
 window.onload = function() {
   ipfs.setProvider(ipfs.localProvider);
   loadTerms();
@@ -175,5 +194,6 @@ window.onload = function() {
     checkAcceptance();
     refreshBalance();
     isChangeable();
+    eventListener();
   });
 }
