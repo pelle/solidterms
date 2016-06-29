@@ -22,6 +22,7 @@
   "homepage": "https://github.com/pelle/solidterms#readme",
   "dependencies": {
     "browser-ipfs": "0.0.6",
-    "bs58": "^3.0.0"
+    "bs58": "^3.0.0",
+    "sleep-promise": "^1.0.0"
   }
 }

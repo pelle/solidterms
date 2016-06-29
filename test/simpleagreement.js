@@ -1,3 +1,4 @@
+var sleep = require('sleep-promise');
 contract('AgreementFactory', function(accounts) {
   var hash = '0x8faeaecef87969a5e4677d09f8491c139b6e46db8d38ec02ef2de552d1d21e0a';
   var offerer = accounts[1];
@@ -162,6 +163,8 @@ contract('AgreementFactory', function(accounts) {
       return agreement.lastChange.call();
     }).then(function(changed) {
       originalChange = changed.toNumber();
+      return sleep(1000);
+    }).then(function(){
       return agreement.proposeChange(newTerms, {from:offerer})
     }).then(function() {
       return agreement.terms.call()
@@ -187,6 +190,8 @@ contract('AgreementFactory', function(accounts) {
       return agreement.lastChange.call();
     }).then(function(changed) {
       originalChange = changed.toNumber();
+      return sleep(1000);
+    }).then(function(){
       return agreement.proposeChange(newTerms, {from:invitee})
     }).then(function() {
       return agreement.terms.call()
@@ -208,6 +213,8 @@ contract('AgreementFactory', function(accounts) {
       return agreement.isActive.call();
     }).then(function(active) {
       assert.equal(active.valueOf(), false, "it should not be active");
+      return sleep(1000);
+    }).then(function(){
       return agreement.acceptedCurrent.call();
     }).then(function(acceptedCurrent) {
       assert.equal(acceptedCurrent.toNumber(), 1, "it should count 1 accepted");
