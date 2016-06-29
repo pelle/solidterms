@@ -150,16 +150,34 @@ function loadTerms() {
   });
 }
 
+function eventLogger(error,result) {
+    var eventlog = document.getElementById("eventlog");
+    var verb;
+    var actor;
+    if (result.event == "TermsChanged") {
+      action = " changed the terms to ";
+      actor = result.args.changer;
+    } else if(result.event == "TermsAccepted") {
+      action = " accepted the terms of "
+      actor = result.args.accepter;
+    }
+    var msg;
+    if (result.args && result.args.terms) {
+      var ipfshash = hex2base58(result.args.terms);
+      msg = actor + action+ "<a href='https://ipfs.io/ipfs/"+ipfshash+"'>"+ipfshash+"</a>";
+    } else {
+      // msg = result.event;
+      console.log(result);
+    }
+    eventlog.insertAdjacentHTML("beforeBegin",  "<li>"+msg+"</li>");
+}
 function eventListener() {
   var ricardo = RicardoCoin.deployed();
-  var eventlog = document.getElementById("eventlog");
-  ricardo.TermsChanged({}).watch(function(error, result) {
-    var ipfshash = hex2base58(result.args.terms);
-    eventlog.innerHTML += "<li>"+result.args.changer+" changed the terms to <a href='https://ipfs.io/ipfs/"+ipfshash+"'>"+ipfshash+"</a></li>";
-  });
-  ricardo.TermsAccepted({}).watch(function(error, result) {
-    var ipfshash = hex2base58(result.args.terms);
-    eventlog.innerHTML += "<li>"+result.args.accepter+" accepted the terms of <a href='https://ipfs.io/ipfs/"+ipfshash+"'>"+ipfshash+"</a></li>";
+  
+  var events = ricardo.allEvents();
+  events.watch(eventLogger);
+  events.get(function(e,logs) {
+    logs.map(eventLogger);
   });
 };
 
