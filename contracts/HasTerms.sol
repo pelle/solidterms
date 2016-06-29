@@ -9,8 +9,7 @@
 contract HasTerms {
   // Event created when agreement is reached (active)
   event AgreementReached (
-    address indexed agreement,
-    bytes32 terms
+    bytes32 indexed terms
   );
   // Event to be created when terms are accepted by a single party
   event TermsAccepted(

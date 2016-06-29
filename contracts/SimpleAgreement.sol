@@ -32,6 +32,6 @@ contract SimpleAgreement is InvitationOnly, Changeable, Retractable {
   function accept(bytes32 _terms) {
     super.accept(_terms);
     acceptedCurrent ++;
-    if (isActive()) AgreementReached(this,terms);
+    if (isActive()) AgreementReached(terms);
   }
 }
